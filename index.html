@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var _currentFetch = window.fetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return _currentFetch;
+            },
+            set: function(newFetch) {
+              _currentFetch = newFetch;
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {
+          // Fallback if needed
+        }
+      })();
+    </script>
+    <title>Dấu Ấn Việt 3D — Bảo tàng số Di sản Kiến trúc & Lịch sử Đông Nam Bộ</title>
+    <meta name="theme-color" content="#2C241E" />
+    <meta name="description" content="Khám phá không gian bảo tàng số tương tác 3D, bản đồ lịch sử Gia Định 1815, thuyết minh đa ngôn ngữ và hồ sơ 17 di sản kiến trúc lịch sử Đông Nam Bộ." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232C241E'/%3E%3Cpath d='M5 13.5C9.5 13 13 10.8 16 7.5C19 10.8 22.5 13 27 13.5' stroke='%23C9A46A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M7.5 17.5C10.5 17 13.2 15.8 16 13.8C18.8 15.8 21.5 17 24.5 17.5' stroke='%23F7F2E9' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M10.5 17.5V23.5M16 14.5V23.5M21.5 17.5V23.5M7.5 23.5H24.5' stroke='%23C9A46A' stroke-width='1.75' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.svg" />
+    <meta property="og:site_name" content="Dấu Ấn Việt 3D" />
+    <meta property="og:title" content="Dấu Ấn Việt 3D — Bảo tàng số Di sản Kiến trúc & Lịch sử Đông Nam Bộ" />
+    <meta property="og:description" content="Khám phá không gian bảo tàng số tương tác 3D, bản đồ lịch sử Gia Định 1815, thuyết minh đa ngôn ngữ và hồ sơ 17 di sản kiến trúc lịch sử Đông Nam Bộ." />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dấu Ấn Việt 3D — Bảo tàng số Di sản Kiến trúc & Lịch sử Đông Nam Bộ" />
+    <meta name="twitter:description" content="Khám phá không gian bảo tàng số tương tác 3D, bản đồ lịch sử Gia Định 1815, thuyết minh đa ngôn ngữ và hồ sơ 17 di sản kiến trúc lịch sử Đông Nam Bộ." />
+    <meta name="twitter:image" content="/og-image.svg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Dấu Ấn Việt 3D",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "All",
+        "description": "Bảo tàng số Di sản Kiến trúc & Lịch sử Đông Nam Bộ với không gian 3D tương tác, bản đồ lịch sử 1815 và học liệu đa ngôn ngữ."
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#000000] text-[#F5F5F7] antialiased selection:bg-[#0071E3] selection:text-white font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

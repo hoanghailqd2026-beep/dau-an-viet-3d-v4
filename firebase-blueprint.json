@@ -1,0 +1,545 @@
+{
+  "entities": {
+    "HeritageSiteDoc": {
+      "title": "HeritageSiteDoc",
+      "description": "Lightweight metadata, high-resolution photo URLs, captions, and editorial overrides for each of the 17 heritage monuments.",
+      "type": "object",
+      "properties": {
+        "siteId": { "type": "string", "description": "Unique heritage monument identifier (e.g. HCM-DT-001)" },
+        "code": { "type": "string", "description": "Two-digit archival code (01 to 17)" },
+        "officialName": { "type": "string", "description": "Official monument name" },
+        "photos": { "type": "array", "items": { "type": "string" }, "description": "Primary and secondary high-resolution photo URLs" },
+        "visibility": { "type": "string", "enum": ["published", "hidden"] },
+        "summary": { "type": "string" },
+        "chronology": { "type": "string" },
+        "architecturalStyle": { "type": "string" },
+        "conservationNotes": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["siteId", "updatedAt"]
+    },
+    "SiteModelDoc": {
+      "title": "SiteModelDoc",
+      "description": "3D model cloud reference (CDN URL or chunked DB pointer), transform calibration, explosion dissection settings, and hotspots.",
+      "type": "object",
+      "properties": {
+        "siteId": { "type": "string" },
+        "modelUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "storagePath": { "type": "string" },
+        "scale": { "type": "number" },
+        "rotationY": { "type": "number" },
+        "explosionFactor": { "type": "number" },
+        "layerOffsets": { "type": "array", "items": { "type": "number" } },
+        "hotspots": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["siteId", "updatedAt"]
+    },
+    "SiteAudioDoc": {
+      "title": "SiteAudioDoc",
+      "description": "Audio narration cloud reference (.m4a/.mp3 CDN URL or chunked DB pointer), duration metadata, and script overrides.",
+      "type": "object",
+      "properties": {
+        "siteId": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "durationSec": { "type": "number" },
+        "storagePath": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["siteId", "updatedAt"]
+    },
+    "CloudAssetMetaDoc": {
+      "title": "CloudAssetMetaDoc",
+      "description": "Metadata manifest for a chunked 3D model (.glb), audio narration (.m4a/.mp3), uploaded image, or short video (<=25MB) stored across 350KB Base64 chunks.",
+      "type": "object",
+      "properties": {
+        "assetType": { "type": "string", "enum": ["models", "audio", "images", "videos"] },
+        "siteId": { "type": "string" },
+        "fileName": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "totalChunks": { "type": "number" },
+        "totalSize": { "type": "number" },
+        "checksum": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assetType", "siteId", "fileName", "mimeType", "totalChunks", "totalSize", "updatedAt", "checksum"]
+    },
+    "CloudAssetChunkDoc": {
+      "title": "CloudAssetChunkDoc",
+      "description": "Fixed 350KB Base64 slice belonging to a chunked binary asset (3D, audio, image, or video up to 25MB/file on Firebase free tier).",
+      "type": "object",
+      "properties": {
+        "assetType": { "type": "string", "enum": ["models", "audio", "images", "videos"] },
+        "siteId": { "type": "string" },
+        "chunkIndex": { "type": "number" },
+        "totalChunks": { "type": "number" },
+        "data": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assetType", "siteId", "chunkIndex", "totalChunks", "data", "updatedAt"]
+    },
+    "SiteVideoDoc": {
+      "title": "SiteVideoDoc",
+      "description": "External YouTube/Vimeo/CDN video links and chunked local video references per heritage monument.",
+      "type": "object",
+      "properties": {
+        "siteId": { "type": "string" },
+        "videoKey": { "type": "string" },
+        "customUrl": { "type": "string" },
+        "embedUrl": { "type": "string" },
+        "kind": { "type": "string" },
+        "titleVi": { "type": "string" },
+        "titleEn": { "type": "string" },
+        "titleZh": { "type": "string" },
+        "sourceNote": { "type": "string" },
+        "chunkAssetKey": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["siteId", "updatedAt"]
+    },
+    "SyncStateDoc": {
+      "title": "SyncStateDoc",
+      "description": "Unified cross-device sync snapshots (accounts registry, global config, visitor reviews, quizzes, and lastGlobalSyncAt marker).",
+      "type": "object",
+      "properties": {
+        "branch": { "type": "string" },
+        "payload": { "type": "object" },
+        "itemCount": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["branch", "updatedAt"]
+    },
+    "HealthCheckProbeDoc": {
+      "title": "HealthCheckProbeDoc",
+      "description": "Lightweight read/write verification probe for Admin Studio Firebase health checks.",
+      "type": "object",
+      "properties": {
+        "ok": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "checkedBy": { "type": "string" }
+      },
+      "required": ["ok", "timestamp"]
+    },
+    "MediaCreditsChunk": {
+      "title": "MediaCreditsChunk",
+      "description": "Chunked archival media credits & copyright citations (max 35 items per document).",
+      "type": "object",
+      "properties": {
+        "chunkIndex": { "type": "number" },
+        "totalChunks": { "type": "number" },
+        "items": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chunkIndex", "totalChunks", "items", "updatedAt"]
+    },
+    "GlobalSettingsDoc": {
+      "title": "GlobalSettingsDoc",
+      "description": "Global site configuration, visibility toggles, and baked asset schema version.",
+      "type": "object",
+      "properties": {
+        "siteSettings": { "type": "object" },
+        "hiddenHeritageIds": { "type": "array", "items": { "type": "string" } },
+        "bakedVersion": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["updatedAt"]
+    },
+    "CloudSyncManifest": {
+      "title": "CloudSyncManifest",
+      "description": "Master timestamp marker for Local vs Cloud conflict comparison.",
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "siteCount": { "type": "number" },
+        "mediaCreditsCount": { "type": "number" },
+        "mediaCreditsChunks": { "type": "number" },
+        "pushedBy": { "type": "string" },
+        "lastGlobalSyncAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["updatedAt"]
+    },
+    "AdminAccount": {
+      "title": "AdminAccount",
+      "description": "Authorized curator and administrator registry keyed by Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "super_admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "PaymentOrderDoc": {
+      "title": "PaymentOrderDoc",
+      "description": "VietQR payment order record with strict status workflow (pending -> waiting_approval -> paid/rejected) and server-enforced bounds.",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string", "minLength": 8, "maxLength": 20, "pattern": "^[a-zA-Z0-9._-]+$" },
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "packageId": { "type": "string", "enum": ["student_25k", "self_guided_59k", "classroom_500k"] },
+        "packageName": { "type": "string" },
+        "quantity": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "amount": { "type": "number", "minimum": 25000, "maximum": 5000000 },
+        "transferContent": { "type": "string", "minLength": 8, "maxLength": 20 },
+        "status": { "type": "string", "enum": ["pending", "waiting_approval", "paid", "rejected"] },
+        "receiptImage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "planTier": { "type": "string", "enum": ["plus", "pro", "school"] },
+        "routeId": { "type": "string" },
+        "siteId": { "type": "string" },
+        "scopeLabel": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "schoolProvince": { "type": "string" },
+        "ticketCode": { "type": "string" },
+        "rejectionReason": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "approvedAt": { "type": "string", "format": "date-time" },
+        "approvedBy": { "type": "string" },
+        "emailSent": { "type": "boolean" },
+        "notificationSent": { "type": "boolean" },
+        "popupNotified": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderId", "uid", "email", "displayName", "packageId", "packageName", "quantity", "amount", "transferContent", "status", "createdAt"]
+    },
+    "UserTicketProfile": {
+      "title": "UserTicketProfile",
+      "description": "Per-account profile, explored progress, quiz scores, and unlocked ticket ownership keyed by UID.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "provider": { "type": "string", "enum": ["google", "facebook", "password"] },
+        "photoURL": { "type": "string" },
+        "tier": { "type": "string", "enum": ["basic", "plus", "pro", "school"] },
+        "unlockedSiteIds": { "type": "array", "items": { "type": "string" } },
+        "unlockedRouteIds": { "type": "array", "items": { "type": "string" } },
+        "hasSchoolPackage": { "type": "boolean" },
+        "isSuspended": { "type": "boolean" },
+        "suspendedAt": { "type": "string" },
+        "suspendedBy": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "schoolCode": { "type": "string" },
+        "ticketCodes": { "type": "array", "items": { "type": "string" } },
+        "activeOrderIds": { "type": "array", "items": { "type": "string" } },
+        "exploredSiteIds": { "type": "array", "items": { "type": "string" } },
+        "bestQuizScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "quizAttempts": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "tier", "updatedAt"]
+    },
+    "FeedbackDoc": {
+      "title": "FeedbackDoc",
+      "description": "Authenticated visitor feedback and rating record (10 to 1,000 characters) keyed by feedbackId.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9._-]+$" },
+        "userId": { "type": "string" },
+        "uid": { "type": "string" },
+        "userEmail": { "type": "string", "format": "email" },
+        "userName": { "type": "string" },
+        "visitorName": { "type": "string" },
+        "provider": { "type": "string", "enum": ["google", "facebook", "guest"] },
+        "contactDisplay": { "type": "string" },
+        "visitorRole": { "type": "string", "enum": ["visitor", "student", "educator"] },
+        "visitorRoleLabel": { "type": "string" },
+        "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "favoriteSiteId": { "type": "string" },
+        "favoriteSiteName": { "type": "string" },
+        "comment": { "type": "string", "minLength": 10, "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "isPinned": { "type": "boolean" },
+        "adminReply": { "type": "string" },
+        "adminRepliedAt": { "type": "string", "format": "date-time" },
+        "adminRepliedBy": { "type": "string" }
+      },
+      "required": ["id", "uid", "visitorName", "rating", "comment", "createdAt"]
+    },
+    "SupportTicketDoc": {
+      "title": "SupportTicketDoc",
+      "description": "Authenticated customer support ticket record (description 10 to 1,000 characters) keyed by ticketId.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9._-]+$" },
+        "ticketCode": { "type": "string" },
+        "uid": { "type": "string" },
+        "userEmail": { "type": "string", "format": "email" },
+        "userName": { "type": "string" },
+        "senderUserId": { "type": "string" },
+        "ownerEmail": { "type": "string", "format": "email" },
+        "guestSessionId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderEmail": { "type": "string", "format": "email" },
+        "senderPhone": { "type": "string" },
+        "category": { "type": "string" },
+        "categoryLabel": { "type": "string" },
+        "relatedSiteId": { "type": "string" },
+        "relatedSiteName": { "type": "string" },
+        "description": { "type": "string", "minLength": 10, "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "resolved"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "adminReply": { "type": "string" },
+        "adminRepliedAt": { "type": "string", "format": "date-time" },
+        "adminRepliedBy": { "type": "string" },
+        "visitorReadReply": { "type": "boolean" },
+        "aiPriority": { "type": "string" },
+        "aiSummary": { "type": "string" },
+        "forwardedToEmail": { "type": "string" },
+        "forwardedAt": { "type": "string" },
+        "messages": { "type": "array" },
+        "aiAutoReplied": { "type": "boolean" },
+        "escalatedToAdmin": { "type": "boolean" },
+        "escalatedAt": { "type": "string" },
+        "supportTier": { "type": "string" },
+        "retentionDays": { "type": "number" },
+        "testerContext": { "type": "object" }
+      },
+      "required": ["id", "ticketCode", "uid", "senderName", "senderEmail", "category", "description", "status", "createdAt", "updatedAt"]
+    },
+    "ClassroomLicenseDoc": {
+      "title": "ClassroomLicenseDoc",
+      "description": "Teacher-owned Gói Ultra (500.000đ) license with up to 35 Pro student seats, class settings, assignment, and invite code.",
+      "type": "object",
+      "properties": {
+        "teacherUid": { "type": "string" },
+        "teacherEmail": { "type": "string", "format": "email" },
+        "teacherName": { "type": "string" },
+        "orderId": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "className": { "type": "string" },
+        "classNote": { "type": "string" },
+        "inviteCode": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "inviteCodeLocked": { "type": "boolean" },
+        "assignment": { "type": "object" },
+        "maxSeats": { "type": "integer", "minimum": 1, "maximum": 35 },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teacherUid", "teacherEmail", "teacherName", "inviteCode", "maxSeats", "active", "createdAt", "updatedAt"]
+    },
+    "ClassroomInviteDoc": {
+      "title": "ClassroomInviteDoc",
+      "description": "Zero-PII invite code lookup record keyed by inviteCode (ULTRA-XXXXXX or PRO-LOP-XXXXX) for atomic 35-seat redemption and class assignment sync.",
+      "type": "object",
+      "properties": {
+        "inviteCode": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "teacherUid": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "className": { "type": "string" },
+        "classNote": { "type": "string" },
+        "inviteCodeLocked": { "type": "boolean" },
+        "assignment": { "type": "object" },
+        "maxSeats": { "type": "integer", "minimum": 1, "maximum": 35 },
+        "seatCount": { "type": "integer", "minimum": 0, "maximum": 35 },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["inviteCode", "teacherUid", "teacherName", "maxSeats", "seatCount", "active", "createdAt", "updatedAt"]
+    },
+    "ClassroomGrantDoc": {
+      "title": "ClassroomGrantDoc",
+      "description": "Individual student Pro grant issued by a teacher (via Gmail or invite code) under a 35-seat Ultra classroom license.",
+      "type": "object",
+      "properties": {
+        "grantId": { "type": "string", "pattern": "^[a-zA-Z0-9._-]+$" },
+        "teacherUid": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "className": { "type": "string" },
+        "inviteCode": { "type": "string" },
+        "studentEmail": { "type": "string", "format": "email" },
+        "studentUid": { "type": "string" },
+        "studentName": { "type": "string" },
+        "displayName": { "type": "string" },
+        "groupName": { "type": "string" },
+        "method": { "type": "string", "enum": ["teacher_email", "invite_code"] },
+        "status": { "type": "string", "enum": ["active", "pending", "suspended", "revoked"] },
+        "exploredSiteIds": { "type": "array", "items": { "type": "string" } },
+        "exploredCount": { "type": "integer", "minimum": 0, "maximum": 17 },
+        "quizAttempts": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "bestQuizScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "activatedAt": { "type": "string", "format": "date-time" },
+        "grantedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["grantId", "teacherUid", "teacherName", "inviteCode", "studentEmail", "method", "status", "grantedAt", "updatedAt"]
+    },
+    "CmsHeritageSite3DDoc": {
+      "title": "CmsHeritageSite3DDoc",
+      "description": "Real-time 3D model visibility override per monument for public museum viewers.",
+      "type": "object",
+      "properties": {
+        "siteId": { "type": "string" },
+        "is3DModelHidden": { "type": "boolean" },
+        "hidden3DReason": { "type": "string", "maxLength": 600 },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "maxLength": 160 }
+      },
+      "required": ["siteId", "is3DModelHidden", "updatedAt"]
+    },
+    "SystemSetting3DConfigDoc": {
+      "title": "SystemSetting3DConfigDoc",
+      "description": "Global 3D viewer maintenance toggle and announcement message.",
+      "type": "object",
+      "properties": {
+        "isGlobal3DHidden": { "type": "boolean" },
+        "globalHiddenReason": { "type": "string", "maxLength": 600 },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "maxLength": 160 }
+      },
+      "required": ["isGlobal3DHidden", "globalHiddenReason", "updatedAt"]
+    },
+    "CmsEventDoc": {
+      "title": "CmsEventDoc",
+      "description": "Publicly readable heritage museum event, competition, or announcement managed by admins.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9._-]+$" },
+        "title": { "type": "string", "maxLength": 220 },
+        "titleEn": { "type": "string", "maxLength": 220 },
+        "titleZh": { "type": "string", "maxLength": 220 },
+        "category": { "type": "string", "enum": ["Triển lãm số", "Cuộc thi Sử học", "Hội thảo / Workshop", "Bảo tồn Di sản", "Thông báo"] },
+        "startDate": { "type": "string", "maxLength": 32 },
+        "endDate": { "type": "string", "maxLength": 32 },
+        "location": { "type": "string", "maxLength": 200 },
+        "relatedSiteId": { "type": "string", "maxLength": 64 },
+        "coverImageUrl": { "type": "string", "maxLength": 280000 },
+        "summary": { "type": "string", "maxLength": 1000 },
+        "content": { "type": "string", "maxLength": 12000 },
+        "registrationUrl": { "type": "string", "maxLength": 1024 },
+        "isFeatured": { "type": "boolean" },
+        "isHidden": { "type": "boolean" },
+        "createdBy": { "type": "string", "maxLength": 160 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "category", "startDate", "endDate", "location", "summary", "content", "isFeatured", "isHidden", "createdBy", "updatedAt"]
+    },
+    "ActivityLogDoc": {
+      "title": "ActivityLogDoc",
+      "description": "Audit and activity log entry written by authenticated actors and read by admins.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-zA-Z0-9._-]+$" },
+        "action": { "type": "string", "enum": ["REGISTER_PASSWORD", "LOGIN_PASSWORD", "LOGIN_OAUTH", "PASSWORD_RESET_SENT", "USER_SUSPEND_TOGGLE", "CMS_EVENT_UPDATE", "CMS_TOGGLE_3D", "SYSTEM_ADMIN_ACTION"] },
+        "actorUid": { "type": "string", "maxLength": 160 },
+        "actorEmail": { "type": "string", "maxLength": 254 },
+        "actorName": { "type": "string", "maxLength": 160 },
+        "targetId": { "type": "string", "maxLength": 120 },
+        "detail": { "type": "string", "maxLength": 1000 },
+        "deviceLabel": { "type": "string", "maxLength": 160 },
+        "locationDisplay": { "type": "string", "maxLength": 160 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "action", "actorUid", "actorEmail", "actorName", "detail", "deviceLabel", "locationDisplay", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/heritage_sites/{siteId}": {
+      "schema": { "$ref": "#/entities/HeritageSiteDoc" },
+      "description": "Publicly readable heritage monument catalog metadata; admin-only write."
+    },
+    "/site_models/{siteId}": {
+      "schema": { "$ref": "#/entities/SiteModelDoc" },
+      "description": "Publicly readable 3D model references and calibration settings; admin-only write."
+    },
+    "/site_audio/{siteId}": {
+      "schema": { "$ref": "#/entities/SiteAudioDoc" },
+      "description": "Publicly readable audio narration references and script overrides; admin-only write."
+    },
+    "/site_videos/{siteId}": {
+      "schema": { "$ref": "#/entities/SiteVideoDoc" },
+      "description": "Publicly readable documentary video links & chunked video metadata; admin-only write."
+    },
+    "/sync_state/{docId}": {
+      "schema": { "$ref": "#/entities/SyncStateDoc" },
+      "description": "Unified cross-device sync snapshots (accounts, globalConfig, reviews); admin-only write."
+    },
+    "/cloud_assets_meta/{docId}": {
+      "schema": { "$ref": "#/entities/CloudAssetMetaDoc" },
+      "description": "Publicly readable chunked binary asset metadata manifests (models, audio, images, videos); admin-only write."
+    },
+    "/cloud_assets_chunks/{docId}": {
+      "schema": { "$ref": "#/entities/CloudAssetChunkDoc" },
+      "description": "Publicly readable 350KB Base64 binary chunks for 3D models, narrations, images & videos; admin-only write."
+    },
+    "/_healthCheck/{docId}": {
+      "schema": { "$ref": "#/entities/HealthCheckProbeDoc" },
+      "description": "Publicly readable health check probe; admin-only write to verify Rules & DB connectivity."
+    },
+    "/media_credits/{chunkId}": {
+      "schema": { "$ref": "#/entities/MediaCreditsChunk" },
+      "description": "Publicly readable chunked archival citations; admin-only write."
+    },
+    "/global_settings/{docId}": {
+      "schema": { "$ref": "#/entities/GlobalSettingsDoc" },
+      "description": "Publicly readable global banner & visibility settings; admin-only write."
+    },
+    "/heritage_cloud_sync/{docId}": {
+      "schema": { "$ref": "#/entities/CloudSyncManifest" },
+      "description": "Publicly readable cloud sync version manifest; admin-only write."
+    },
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/AdminAccount" },
+      "description": "Admin role registry; owner or admin read, admin-only write."
+    },
+    "/payment_orders/{orderId}": {
+      "schema": { "$ref": "#/entities/PaymentOrderDoc" },
+      "description": "VietQR payment orders; strictly isolated per uid for buyers, full moderation for Admin."
+    },
+    "/users/{uid}": {
+      "schema": { "$ref": "#/entities/UserTicketProfile" },
+      "description": "Per-account unlocked ticket ownership and subscription profile; owner or admin read, admin-only write."
+    },
+    "/feedbacks/{feedbackId}": {
+      "schema": { "$ref": "#/entities/FeedbackDoc" },
+      "description": "Authenticated visitor feedback entries; owner/admin read, authenticated uid-matched create, admin moderation."
+    },
+    "/support_tickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/SupportTicketDoc" },
+      "description": "Authenticated support tickets; strictly isolated per uid for owner read/follow-up, full moderation for Admin."
+    },
+    "/classroom_licenses/{teacherUid}": {
+      "schema": { "$ref": "#/entities/ClassroomLicenseDoc" },
+      "description": "Teacher-owned Gói Lớp học 500k license (max 35 seats); owner/admin read & write."
+    },
+    "/classroom_invites/{inviteCode}": {
+      "schema": { "$ref": "#/entities/ClassroomInviteDoc" },
+      "description": "Zero-PII invite code lookup (exact get only); atomic seat increment by redeeming students."
+    },
+    "/classroom_grants/{grantId}": {
+      "schema": { "$ref": "#/entities/ClassroomGrantDoc" },
+      "description": "Per-student Pro grant records; scoped to teacher or matching student email/uid."
+    },
+    "/cms_heritage_sites/{siteId}": {
+      "schema": { "$ref": "#/entities/CmsHeritageSite3DDoc" },
+      "description": "Publicly readable 3D model visibility status per monument; admin-only write."
+    },
+    "/system_settings/{docId}": {
+      "schema": { "$ref": "#/entities/SystemSetting3DConfigDoc" },
+      "description": "Publicly readable system 3D viewer maintenance configuration; admin-only write."
+    },
+    "/cms_events/{eventId}": {
+      "schema": { "$ref": "#/entities/CmsEventDoc" },
+      "description": "Publicly readable heritage museum events & announcements; admin-only write."
+    },
+    "/activity_logs/{logId}": {
+      "schema": { "$ref": "#/entities/ActivityLogDoc" },
+      "description": "Security & CMS activity audit logs; admin-only read, authenticated uid-matched create."
+    }
+  }
+}
